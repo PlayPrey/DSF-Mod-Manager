@@ -1,0 +1,52 @@
+﻿<Page x:Class="DsfMm.ModListPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DsfMm"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="784"
+      Title="ModListPage">
+
+    <Grid x:Name="primaryGrid" AllowDrop="True" DragEnter="DropModToInstall_DragEnter" DragLeave="DropModToInstall_DragLeave" Drop="primaryGrid_Drop">
+
+
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="primaryScrollview">
+                <Grid x:Name="gridParent">
+
+                    <Button HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="784" BorderBrush="{x:Null}" Foreground="{x:Null}" Margin="0">
+                        <Grid Width="784" Height="40">
+                            <CheckBox HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,-4,0,0">
+                                <CheckBox.LayoutTransform>
+                                    <ScaleTransform ScaleX="1.6" ScaleY="1.6"/>
+                                </CheckBox.LayoutTransform>
+                            </CheckBox>
+                            <Label FontFamily="{StaticResource Agency}" Content="Mod Text" Margin="40,0,0,0" VerticalAlignment="Center" Height="40" VerticalContentAlignment="Center" FontSize="18" >
+                                <Label.Foreground>
+                                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                        <GradientStop Color="Black" Offset="0"/>
+                                        <GradientStop Color="#FF181818" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Label.Foreground>
+                            </Label>
+                        </Grid>
+                        <Button.Background>
+                            <ImageBrush ImageSource="/list_hover.png" Stretch="None" TileMode="None"/>
+                        </Button.Background>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+
+
+        <Grid >
+
+            <Grid x:Name="DropModToInstall" Background="#E5202020" Margin="0">
+                <Label Content="Drop a mod .zip archive to auto-install" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="30" FontFamily="{DynamicResource Agency}" FontWeight="Bold" FontStyle="Italic" Foreground="#FFE6E6E6"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>
