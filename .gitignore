@@ -10,6 +10,10 @@
 *.userosscache
 *.sln.docstates
 
+# I don't want no PICTURES
+
+*.png
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
