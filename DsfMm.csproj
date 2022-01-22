@@ -79,6 +79,7 @@
     <Compile Include="ModListPage.xaml.cs">
       <DependentUpon>ModListPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Scripts\InstallManager.cs" />
     <Compile Include="Welcome.xaml.cs">
       <DependentUpon>Welcome.xaml</DependentUpon>
     </Compile>

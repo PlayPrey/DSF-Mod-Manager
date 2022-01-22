@@ -494,7 +494,12 @@ namespace DsfMm
 
             DropModToInstall.Height = 0;
         }
+        public void InstallMod(string mod)
+        {
+
+        }
     }
+
     public static class Imaging
     {
         public static System.Windows.Media.Imaging.BitmapSource CreateBitmapSourceFromBitmap(Bitmap bitmap)

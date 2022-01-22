@@ -9,6 +9,7 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.IO.Compression;
+using DsfMm.Scripts;
 
 namespace DsfMm
 {
@@ -222,9 +223,22 @@ namespace DsfMm
                     //else
                     //    MessageBox.Show(modFolderToInstall[modFolder] + @"\cache Don' exis!");
 
-                    if(shouldInstall)
-                        InstallModsIntoGame(modFolderToInstall[modFolder], settings.GameDirectory.Replace(@"\Driver.exe", ""));
+                    if (shouldInstall)
+                    {
+                        switch(InstallManager.Install(modFolderToInstall[modFolder]))
+                        {
+                            case 1:
+                                MessageBox.Show("Unknown error occured.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                break;
+                            case 2:
+                                MessageBox.Show("Game directory is invalid, maybe settings file is invalid.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                break;
+                        }
+                    }
                 }
+
+                InstallManager.GenerateBootstrapper();
+
 
                 MessageBox.Show("Starting game...");
 
@@ -280,64 +294,64 @@ namespace DsfMm
                 MessageBox.Show("DONE WITH BACKUP");
         }
 
-        private void InstallModsIntoGame(string mod, string game)
-        {
-            InstallationStatus status = null;
+        //private void InstallModsIntoGame(string mod, string game)
+        //{
+        //    InstallationStatus status = null;
 
-            if (File.Exists(mod + @"\cache"))
-                status = JsonConvert.DeserializeObject<InstallationStatus>(File.ReadAllText(mod + @"\cache"));
-            else
-                status = new InstallationStatus();
+        //    if (File.Exists(mod + @"\cache"))
+        //        status = JsonConvert.DeserializeObject<InstallationStatus>(File.ReadAllText(mod + @"\cache"));
+        //    else
+        //        status = new InstallationStatus();
 
-            status.files = new List<string>();
-            status.folder = mod;
+        //    status.files = new List<string>();
+        //    status.folder = mod;
 
-            if (status.isAlcatraz)
-            {
-                if(File.Exists(mod + "\\AlcatrazLauncher\\ubiorbitapi_r2_loader.dll"))
-                {
-                    // Sure, backup ain't supposed to be here but who cares...
-                    if (File.Exists(game + "\\ubiorbitapi_r2_loader.dll") && !File.Exists(settings.ModFolder + "\\_BackupFiles\\ubiorbitapi_r2_loader.dll"))
-                        File.Move(game + "\\ubiorbitapi_r2_loader.dll", settings.ModFolder + "\\_BackupFiles\\ubiorbitapi_r2_loader.dll");
+        //    if (status.isAlcatraz)
+        //    {
+        //        if(File.Exists(mod + "\\AlcatrazLauncher\\ubiorbitapi_r2_loader.dll"))
+        //        {
+        //            // Sure, backup ain't supposed to be here but who cares...
+        //            if (File.Exists(game + "\\ubiorbitapi_r2_loader.dll") && !File.Exists(settings.ModFolder + "\\_BackupFiles\\ubiorbitapi_r2_loader.dll"))
+        //                File.Move(game + "\\ubiorbitapi_r2_loader.dll", settings.ModFolder + "\\_BackupFiles\\ubiorbitapi_r2_loader.dll");
 
-                    File.Copy(mod + "\\AlcatrazLauncher\\ubiorbitapi_r2_loader.dll", game + "\\ubiorbitapi_r2_loader.dll", true);
-                }
-            }
-            else
-            {
+        //            File.Copy(mod + "\\AlcatrazLauncher\\ubiorbitapi_r2_loader.dll", game + "\\ubiorbitapi_r2_loader.dll", true);
+        //        }
+        //    }
+        //    else
+        //    {
 
-                foreach (string file in Directory.GetFiles(mod, "*", SearchOption.AllDirectories))
-                {
-                    string fileId = file.ToLower().Replace(mod.ToLower(), "");
-                    string pasteLocation = game + fileId;
+        //        foreach (string file in Directory.GetFiles(mod, "*", SearchOption.AllDirectories))
+        //        {
+        //            string fileId = file.ToLower().Replace(mod.ToLower(), "");
+        //            string pasteLocation = game + fileId;
 
-                    if (!Directory.Exists(Path.GetDirectoryName(pasteLocation)))
-                        Directory.CreateDirectory(Path.GetDirectoryName(pasteLocation));
+        //            if (!Directory.Exists(Path.GetDirectoryName(pasteLocation)))
+        //                Directory.CreateDirectory(Path.GetDirectoryName(pasteLocation));
 
-                    File.Copy(file, pasteLocation, true);
+        //            File.Copy(file, pasteLocation, true);
 
-                    status.files.Add(fileId);
-                }
-            }
+        //            status.files.Add(fileId);
+        //        }
+        //    }
 
-            try
-            {
-                if (status.isAlcatraz)
-                    page.listCheckboxes["ALCATRAZ"].IsChecked = true;
-                else
-                    page.listCheckboxes[new DirectoryInfo(status.folder).Name.ToUpper().Replace(" ", "")].IsChecked = true;
-            }
-            catch
-            {
-                Console.WriteLine("===================================");
-                Console.WriteLine("Failed to check the checkbox for mod.");
-                Console.WriteLine("===================================");
-            }
+        //    try
+        //    {
+        //        if (status.isAlcatraz)
+        //            page.listCheckboxes["ALCATRAZ"].IsChecked = true;
+        //        else
+        //            page.listCheckboxes[new DirectoryInfo(status.folder).Name.ToUpper().Replace(" ", "")].IsChecked = true;
+        //    }
+        //    catch
+        //    {
+        //        Console.WriteLine("===================================");
+        //        Console.WriteLine("Failed to check the checkbox for mod.");
+        //        Console.WriteLine("===================================");
+        //    }
 
-            status.isInstalled = true;
+        //    status.isInstalled = true;
 
-            File.WriteAllText(mod + @"\cache" ,JsonConvert.SerializeObject(status, Formatting.Indented));
-        }
+        //    File.WriteAllText(mod + @"\cache" ,JsonConvert.SerializeObject(status, Formatting.Indented));
+        //}
 
         private void ScanDroppedFiles(string[] files)
         {
