@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:DsfMm"
-             StartupUri="Manager.xaml">
+             StartupUri="Frontend/Manager.xaml">
     <Application.Resources>
         <FontFamily x:Key="Agency">./agency.ttf#Agency</FontFamily>
     </Application.Resources>

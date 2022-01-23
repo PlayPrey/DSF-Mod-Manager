@@ -10,8 +10,9 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.IO.Compression;
 using DsfMm.Scripts;
+using Microsoft.Win32;
 
-namespace DsfMm
+namespace DsfMm.Frontend
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -21,6 +22,7 @@ namespace DsfMm
         public Settings settings;
         public ModListPage page;
         public AlcatrazSettings alcatrazPage;
+        public ModPreview modPreview;
 
         private bool debug = false;
         private bool hasIncorrectVersion;
@@ -158,10 +160,10 @@ namespace DsfMm
                     modFolderToInstall.Add(dir);
                 }
 
-                if(debug)
+                if (debug)
                     MessageBox.Show("Now installing" + modFolderToInstall[0]);
 
-                List<string> directoriesToScan = new List<string>();   
+                List<string> directoriesToScan = new List<string>();
                 List<string> filesToBackup = new List<string>();
 
                 if (!Directory.Exists(settings.ModFolder + "\\_BackupFiles"))
@@ -207,7 +209,7 @@ namespace DsfMm
                     BackupFilesModWillReplace(modFolderToInstall[modFolder], settings.GameDirectory.Replace(@"\Driver.exe", ""));
 
                 }
-                
+
 
                 // Now inject the mods into the game
                 for (int modFolder = 0; modFolder < modFolderToInstall.Count; modFolder++)
@@ -217,7 +219,7 @@ namespace DsfMm
                     if (File.Exists(modFolderToInstall[modFolder] + @"\cache"))
                     {
                         InstallationStatus status = JsonConvert.DeserializeObject<InstallationStatus>(File.ReadAllText(modFolderToInstall[modFolder] + @"\cache"));
-                        if(status.isInstalled)
+                        if (status.isInstalled || !status.isEnabled)
                             shouldInstall = false;
                     }
                     //else
@@ -225,7 +227,7 @@ namespace DsfMm
 
                     if (shouldInstall)
                     {
-                        switch(InstallManager.Install(modFolderToInstall[modFolder]))
+                        switch (InstallManager.Install(modFolderToInstall[modFolder]))
                         {
                             case 1:
                                 MessageBox.Show("Unknown error occured.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -234,6 +236,12 @@ namespace DsfMm
                                 MessageBox.Show("Game directory is invalid, maybe settings file is invalid.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                                 break;
                         }
+                    }
+                    else
+                    {
+                        InstallManager.UninstallDisabledMod(modFolderToInstall[modFolder]);
+
+
                     }
                 }
 
@@ -246,11 +254,13 @@ namespace DsfMm
 
                 game.EnableRaisingEvents = true;
                 game.Exited += Game_Exited;
+
             }
             else
             {
                 Process.Start(settings.GameDirectory);
             }
+
         }
 
         private void BackupFilesModWillReplace(string mod, string game)
@@ -440,18 +450,21 @@ namespace DsfMm
                 if(File.Exists(mod + @"\cache"))
                 {
                     InstallationStatus status = JsonConvert.DeserializeObject<InstallationStatus>(File.ReadAllText(mod + @"\cache"));
-                    
-                    if(status.files != null)
-                    {
-                        if(status.files.Count > 0)
-                        {
-                            foreach (string file in status.files)
-                            {
-                                if(debug)
-                                    MessageBox.Show("Delete file: \n" + settings.GameDirectory.Replace(@"\Driver.exe", "") + file);
 
-                                if(File.Exists(settings.GameDirectory.Replace(@"\Driver.exe", "") + file))
-                                    File.Delete(settings.GameDirectory.Replace(@"\Driver.exe", "") + file);
+                    if (status.isInstalled)
+                    {
+                        if (status.files != null)
+                        {
+                            if (status.files.Count > 0)
+                            {
+                                foreach (string file in status.files)
+                                {
+                                    if (debug)
+                                        MessageBox.Show("Delete file: \n" + settings.GameDirectory.Replace(@"\Driver.exe", "") + file);
+
+                                    if (File.Exists(settings.GameDirectory.Replace(@"\Driver.exe", "") + file))
+                                        File.Delete(settings.GameDirectory.Replace(@"\Driver.exe", "") + file);
+                                }
                             }
                         }
                     }
@@ -485,16 +498,19 @@ namespace DsfMm
             }
 
 
-            //Put all backup files back in place
-            foreach (string backupFile in Directory.GetFiles(settings.ModFolder + @"\_BackupFiles", "*", SearchOption.AllDirectories))
+            if (Directory.Exists(settings.ModFolder + @"\_BackupFiles"))
             {
-                string fileId = backupFile.Replace(settings.ModFolder + @"\_BackupFiles", "");
-                string game = settings.GameDirectory.Replace("Driver.exe", "");
-                
-                if(debug)
-                    MessageBox.Show(game + fileId);
+                //Put all backup files back in place
+                foreach (string backupFile in Directory.GetFiles(settings.ModFolder + @"\_BackupFiles", "*", SearchOption.AllDirectories))
+                {
+                    string fileId = backupFile.Replace(settings.ModFolder + @"\_BackupFiles", "");
+                    string game = settings.GameDirectory.Replace("Driver.exe", "");
 
-                File.Copy(backupFile, game + fileId, true);
+                    if (debug)
+                        MessageBox.Show(game + fileId);
+
+                    File.Copy(backupFile, game + fileId, true);
+                }
             }
 
 
@@ -605,6 +621,23 @@ namespace DsfMm
         {
             App.Width = 800;
         }
+
+        private void bCreateManifest_Click(object sender, RoutedEventArgs e)
+        {
+            GenerateManifest gen = new GenerateManifest();
+            gen.ShowDialog();
+        }
+
+        private void bInstallMods_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog open = new OpenFileDialog();
+            open.Filter = "Zip Archive (*.zip)|*.zip";
+
+            if(open.ShowDialog() == true)
+            {
+                ScanDroppedFiles(open.FileNames);
+            }
+        }
     }
     public class Settings
     {
@@ -624,6 +657,7 @@ namespace DsfMm
         public string Dev { get; set; }
         public string DisplayName { get; set; }
         public string Version { get; set; }
+        public string Description { get; set; }
     }
     public class Mod
     {

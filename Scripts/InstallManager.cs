@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DsfMm.Frontend;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -94,6 +95,51 @@ namespace DsfMm.Scripts
                 return 0;
             }
             catch(DirectoryNotFoundException)
+            {
+                return 2;
+            }
+            catch
+            {
+                return 1;
+            }
+        }
+        public static int UninstallDisabledMod(string mod)
+        {
+            try
+            {
+                InstallationStatus status = null;
+
+                if (File.Exists(mod + @"\cache"))
+                    status = JsonConvert.DeserializeObject<InstallationStatus>(File.ReadAllText(mod + @"\cache"));
+                else
+                    status = new InstallationStatus();
+
+                if(status.isInstalled && !status.isEnabled)
+                {
+                    foreach (string file in status.files)
+                    {
+                        if(File.Exists(GameDir + file))
+                            File.Delete(GameDir + file);
+
+
+                        if (settings.VanillaFiles.Contains(file.Remove(0,1)))
+                        {
+                            if(File.Exists(settings.ModFolder + @"\_BackupFiles" + file))
+                            {
+                                File.Copy(settings.ModFolder + @"\_BackupFiles" + file, GameDir + file);
+                            }
+                        }
+                    }
+
+                }
+
+                status.isInstalled = false;
+
+                File.WriteAllText(mod + @"\cache", JsonConvert.SerializeObject(status, Formatting.Indented));
+
+                return 0;
+            }
+            catch (DirectoryNotFoundException)
             {
                 return 2;
             }

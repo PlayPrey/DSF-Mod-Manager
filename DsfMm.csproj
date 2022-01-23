@@ -73,21 +73,31 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="AlcatrazSettings.xaml.cs">
+    <Compile Include="Frontend\AlcatrazSettings.xaml.cs">
       <DependentUpon>AlcatrazSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ModListPage.xaml.cs">
+    <Compile Include="Frontend\GenerateManifest.xaml.cs">
+      <DependentUpon>GenerateManifest.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Frontend\ModListPage.xaml.cs">
       <DependentUpon>ModListPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Frontend\ModPreview.xaml.cs">
+      <DependentUpon>ModPreview.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Scripts\InstallManager.cs" />
-    <Compile Include="Welcome.xaml.cs">
+    <Compile Include="Frontend\Welcome.xaml.cs">
       <DependentUpon>Welcome.xaml</DependentUpon>
     </Compile>
-    <Page Include="AlcatrazSettings.xaml">
+    <Page Include="Frontend\AlcatrazSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Manager.xaml">
+    <Page Include="Frontend\GenerateManifest.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Frontend\Manager.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -95,15 +105,19 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Manager.xaml.cs">
+    <Compile Include="Frontend\Manager.xaml.cs">
       <DependentUpon>Manager.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="ModListPage.xaml">
+    <Page Include="Frontend\ModListPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Welcome.xaml">
+    <Page Include="Frontend\ModPreview.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Frontend\Welcome.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -125,6 +139,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <Resource Include="agency.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -139,19 +154,19 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="mm_welcome.jpg" />
+    <Resource Include="Images\mm_welcome.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="play.png" />
+    <Resource Include="Images\play.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="plus.png" />
+    <Resource Include="Images\plus.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="min.png" />
+    <Resource Include="Images\min.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="list_hover.png" />
+    <Resource Include="Images\list_hover.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -14,8 +14,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 
-namespace DsfMm
+namespace DsfMm.Frontend
 {
     /// <summary>
     /// Interaction logic for Welcome.xaml
@@ -64,7 +65,9 @@ namespace DsfMm
             foreach(string file in Directory.GetFiles(tbDir.Text.Replace("Driver.exe", ""), "*", SearchOption.AllDirectories))
                 settings.VanillaFiles.Add(file.Replace(tbDir.Text.Replace("Driver.exe", ""), "").ToLower());
 
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "Settings.json", JsonSerializer.Serialize(settings));
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "Settings.json", JsonConvert.SerializeObject(settings));
+
+            MessageBox.Show("It's set! Please close the program and relaunch it. This will be improved in the next update of course.");
         }
 
 

@@ -17,7 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace DsfMm
+namespace DsfMm.Frontend
 {
     /// <summary>
     /// Interaction logic for AlcatrazSettings.xaml
@@ -117,6 +117,9 @@ namespace DsfMm
             ReadExistingFile();
 
             UpdateFields();
+
+            manager.frame.Content = manager.page;
+            manager.alcatrazPage = null;
         }
 
         private void ReadFromConfig()
@@ -158,6 +161,12 @@ namespace DsfMm
             {
 
             }
+        }
+
+        private void bCancel_Click(object sender, RoutedEventArgs e)
+        {
+            manager.frame.Content = manager.page;
+            manager.alcatrazPage = null;
         }
     }
 }

@@ -16,7 +16,7 @@ using System.Windows.Navigation;
 using Newtonsoft.Json;
 using FontFamily = System.Windows.Media.FontFamily;
 
-namespace DsfMm
+namespace DsfMm.Frontend
 {
     /// <summary>
     /// Interaction logic for ModListPage.xaml
@@ -124,7 +124,7 @@ namespace DsfMm
 
             listCheckboxes.Clear();
             listLabels.Clear();
-            listModFolders.Clear();
+            //listModFolders.Clear();
 
             foreach(InstallationStatus cache in allCacheFiles)
             {
@@ -364,7 +364,18 @@ namespace DsfMm
             }
             else
             {
-                MessageBox.Show("Settings are not yet available for: " + modID);
+                try
+                {
+
+                    //MessageBox.Show("Settings are not yet available for: " + modID);
+                    if (manager.modPreview == null) manager.modPreview = new ModPreview(manager);
+                    manager.frame.Content = manager.modPreview;
+                    manager.modPreview.PopulateScreen(listModFolders[modID.ToUpper()]);
+                }
+                catch(System.Collections.Generic.KeyNotFoundException)
+                {
+                    MessageBox.Show("An error related to the MOD ID detection occured, please re-launch the software.\nChecked for mod id: " + modID.ToUpper());
+                }
             }
         }
 
@@ -410,6 +421,8 @@ namespace DsfMm
 
                     string ExtractionPath = manager.settings.ModFolder + "\\" + Path.GetFileNameWithoutExtension(file);
 
+                    Console.WriteLine("Scanning folder: " + ExtractionPath);
+
                     if (!Directory.Exists(ExtractionPath))
                         archive.ExtractToDirectory(ExtractionPath);
                     else
@@ -429,9 +442,11 @@ namespace DsfMm
                     {
 
                         //Mod mod = new Mod() { Dev = "Unknown", Name = (manager.settings.ModFolder + "\\" + Path.GetFileNameWithoutExtension(file)).Split(Path.DirectorySeparatorChar).Last(), Version = "1.0" };
-                        string modID = Path.GetFileNameWithoutExtension(file).ToLower().Replace(" ", "");
+                        string modID = Path.GetFileNameWithoutExtension(file).ToUpper().Replace(" ", "");
 
                         AddListing(modID, Path.GetFileNameWithoutExtension(file));
+
+                        listModFolders.Add(modID, ExtractionPath);
 
                         //MessageBox.Show(modID);
                     }
@@ -493,10 +508,6 @@ namespace DsfMm
 
 
             DropModToInstall.Height = 0;
-        }
-        public void InstallMod(string mod)
-        {
-
         }
     }
 

@@ -1,4 +1,4 @@
-﻿<Window x:Class="DsfMm.Welcome"
+﻿<Window x:Class="DsfMm.Frontend.Welcome"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Driver San Fransisco - Mod Manager - Welcome" Height="450" Width="800" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
     <Grid>
-        <Image Source="mm_welcome.jpg" Stretch="Fill" />
+        <Image Source="/Images/mm_welcome.jpg" Stretch="Fill" />
         <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="142" Margin="10,72,0,0" Stroke="Black" VerticalAlignment="Top" Width="772"/>
         <Label Height="57" Margin="10,10,10,0" Content="Driver San Fransisco - Mod Manager" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="32" FontFamily="{StaticResource Agency}" FontWeight="Bold" FontStyle="Normal"/>
         <Label Content="Welcome to the Driver San Fransisco mod manager. This will assist you in installing mods, and keep backups of files replaced." Margin="20,82,20,0" VerticalAlignment="Top" Height="30" HorizontalContentAlignment="Center"/>
