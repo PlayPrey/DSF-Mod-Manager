@@ -474,6 +474,8 @@ namespace DsfMm.Frontend
                 {
                     InstallationStatus status = JsonConvert.DeserializeObject<InstallationStatus>(File.ReadAllText(mod + @"\cache"));
 
+                    // Consider combining IF's, might work, might not. who knows
+
                     if (status.isInstalled)
                     {
                         if (status.files != null)
@@ -666,6 +668,16 @@ namespace DsfMm.Frontend
         private void bDebug_Click(object sender, RoutedEventArgs e)
         {
             console.Show();
+        }
+
+        private void App_Closed(object sender, EventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void bTestBoot_Click(object sender, RoutedEventArgs e)
+        {
+            InstallManager.GenerateBootstrapper();
         }
     }
     public class Settings

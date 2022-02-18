@@ -43,6 +43,16 @@ namespace DsfMm.Scripts
                     return string.Empty;
             }
         }
+
+        private static string GameModDir
+        {
+            get
+            {
+                if (GameDir != string.Empty)
+                    return GameDir + @"\\Common\\UserLuaScripts\\ModLoader";
+                else return string.Empty;
+            }
+        }
         public static int Install(string mod)
         {
             try
@@ -76,8 +86,8 @@ namespace DsfMm.Scripts
                         string fileId = file.ToLower().Replace(mod.ToLower(), "");
                         string pasteLocation = GameDir + fileId;
 
-                        if (fileId.EndsWith("bootstrap.lua"))
-                            continue;
+                        //if (fileId.EndsWith("bootstrap.lua"))
+                            //continue;
 
                         if (!Directory.Exists(Path.GetDirectoryName(pasteLocation)))
                             Directory.CreateDirectory(Path.GetDirectoryName(pasteLocation));
@@ -156,6 +166,7 @@ namespace DsfMm.Scripts
             else return false;
         }
 
+
         public static void GenerateBootstrapper()
         {
             List<string> bootstrappers = new List<string>();
@@ -173,54 +184,114 @@ namespace DsfMm.Scripts
                 }
             }
 
-            int stage = 0;
-            List<string> Init = new List<string>();
-            List<string> Launch = new List<string>();
-            List<string> Shutdown = new List<string>();
+            if (!Directory.Exists(GameModDir))
+                Directory.CreateDirectory(GameModDir);
 
-            // Gather all information required to generate a new and neat bootstrapper file.
+            List<string> scriptMods = new List<string>();
 
-            if(bootstrappers.Count > 0)
+            if (Directory.GetDirectories(GameModDir).Length > 0)
             {
-                foreach (string file in bootstrappers)
+                foreach (string dir in Directory.GetDirectories(GameModDir))
                 {
-                    foreach(string line in File.ReadAllLines(file))
+                    if (File.Exists(dir + @"\init.lua"))
                     {
-                        if (line.Contains(BOOTSTRAPPER_INIT) || line.Contains(BOOTSTRAPPER_LAUNCH) || line.Contains(BOOTSTRAPPER_SHUTDOWN))
-                            stage++;
+                        string dirName = new DirectoryInfo(dir).Name;
 
-                        // Stage 0 = Before any function
-                        // Stage 1 = Init
-                        // Stage 2 = Launch
-                        // Stage 3 = Shutdown
-                        // Stage 4 = After all functions
-
-                        if(line.Contains("user_open") || line.Contains("dofile"))
-                        {
-                            Console.WriteLine(stage + ": " + line);
-                            switch(stage)
-                            {
-                                case 1:
-                                    if(!Init.Contains(line))
-                                        Init.Add(line);
-                                    break;
-                                case 2: 
-                                    if(!Launch.Contains(line))
-                                        Launch.Add(line);
-                                    break;
-                                case 3:
-                                    if(!Shutdown.Contains(line))
-                                        Shutdown.Add(line);
-                                    break;
-                            }
-                        }
-
+                        scriptMods.Add("	user_open(\"ModLoader\\" + dirName + "\\init.lua\")");
                     }
-                    stage = 0;
                 }
             }
 
-            // Generate the freaking bootstrapper! 
+
+
+            //int stage = 0;
+            //List<string> Init = new List<string>();
+            //List<string> Launch = new List<string>();
+            //List<string> Shutdown = new List<string>();
+
+            //// Gather all information required to generate a new and neat bootstrapper file.
+
+            //if(bootstrappers.Count > 0)
+            //{
+            //    foreach (string file in bootstrappers)
+            //    {
+            //        foreach(string line in File.ReadAllLines(file))
+            //        {
+            //            if (line.Contains(BOOTSTRAPPER_INIT) || line.Contains(BOOTSTRAPPER_LAUNCH) || line.Contains(BOOTSTRAPPER_SHUTDOWN))
+            //                stage++;
+
+            //            // Stage 0 = Before any function
+            //            // Stage 1 = Init
+            //            // Stage 2 = Launch
+            //            // Stage 3 = Shutdown
+            //            // Stage 4 = After all functions
+
+            //            if(line.Contains("user_open") || line.Contains("dofile"))
+            //            {
+            //                Console.WriteLine(stage + ": " + line);
+            //                switch(stage)
+            //                {
+            //                    case 1:
+            //                        if(!Init.Contains(line))
+            //                            Init.Add(line);
+            //                        break;
+            //                    case 2: 
+            //                        if(!Launch.Contains(line))
+            //                            Launch.Add(line);
+            //                        break;
+            //                    case 3:
+            //                        if(!Shutdown.Contains(line))
+            //                            Shutdown.Add(line);
+            //                        break;
+            //                }
+            //            }
+
+            //        }
+            //        stage = 0;
+            //    }
+            //}
+
+            File.WriteAllLines(GameDir + @"\Common\\UserLuaScripts\\modloader.lua", scriptMods.ToArray());
+
+            List<string> BootstrapperOriginal = new List<string>();
+            BootstrapperOriginal = File.ReadAllLines(GameDir + @"\Common\\UserLuaScripts\\bootstrap.lua").ToList();
+
+            bool isAlreadyThere = false;
+            int launchFirst = -1;
+            int launchEnd = -1;
+
+            for( int i = 0; i < BootstrapperOriginal.Count; i++ )
+            {
+                if (BootstrapperOriginal[i].Contains("function UserBootstrapper.Launch()"))
+                {
+                    launchFirst = i;
+                }
+
+
+                if (BootstrapperOriginal[i].Contains("modloader.lua"))
+                {
+                    isAlreadyThere = true;
+                }
+
+                if (BootstrapperOriginal[i].Contains("end") && i > launchFirst && launchFirst != -1)
+                {
+                    launchEnd = i;
+                    break;
+                }
+            }
+
+            if (!isAlreadyThere)
+            {
+                BootstrapperOriginal.Insert(launchFirst + 2, "	user_open(\"modloader.lua\")");
+
+                File.WriteAllLines(GameDir + @"\Common\\UserLuaScripts\\bootstrap.lua", BootstrapperOriginal.ToArray());
+            }
+
+
+
+            // Generate the freaking bootstrapper! -- Not anymore
+
+            /*
 
             List<string> result = new List<string>();
 
@@ -266,7 +337,7 @@ namespace DsfMm.Scripts
 
             File.WriteAllLines(GameDir + @"\Common\\UserLuaScripts\\bootstrap.lua", result.ToArray());
 
-
+            */
 
         }
     }

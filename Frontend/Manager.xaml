@@ -6,7 +6,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:local="clr-namespace:DsfMm.Frontend"
   mc:Ignorable="d"
-  Title="Driver San Fransisco - Mod Manager" Height="600" Width="800" SizeChanged="App_SizeChanged">
+  Title="Driver San Fransisco - Mod Manager" Height="600" Width="800" SizeChanged="App_SizeChanged" Closed="App_Closed">
     <Grid>
         <!--<ListView x:Name="modListView" Height="328" Margin="0,59,0,0" VerticalAlignment="Top">
             <ListView.View>
@@ -39,6 +39,9 @@
             <Separator></Separator>
             <Button x:Name="bDebug" Height="30" Margin="0,-3,0,-5" Click="bDebug_Click" >
                 <Label>Open Log</Label>
+            </Button>
+            <Button x:Name="bTestBootstrap" Height="30" Margin="0,-3,0,-5" Click="bTestBoot_Click" >
+                <Label>TEST EST</Label>
             </Button>
         </ToolBar>
         <Button x:Name="bPlayWithMods" HorizontalAlignment="Left" Margin="582,35,0,0" VerticalAlignment="Top" Width="200" Height="24" Click="bPlayWithMods_Click">
