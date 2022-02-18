@@ -37,6 +37,9 @@
                 <Label>Return to Vanilla</Label>
             </Button>
             <Separator></Separator>
+            <Button x:Name="bDebug" Height="30" Margin="0,-3,0,-5" Click="bDebug_Click" >
+                <Label>Open Log</Label>
+            </Button>
         </ToolBar>
         <Button x:Name="bPlayWithMods" HorizontalAlignment="Left" Margin="582,35,0,0" VerticalAlignment="Top" Width="200" Height="24" Click="bPlayWithMods_Click">
             <Grid>

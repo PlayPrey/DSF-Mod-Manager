@@ -76,6 +76,9 @@
     <Compile Include="Frontend\AlcatrazSettings.xaml.cs">
       <DependentUpon>AlcatrazSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Frontend\ConsoleWindow.xaml.cs">
+      <DependentUpon>ConsoleWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Frontend\GenerateManifest.xaml.cs">
       <DependentUpon>GenerateManifest.xaml</DependentUpon>
     </Compile>
@@ -90,6 +93,10 @@
       <DependentUpon>Welcome.xaml</DependentUpon>
     </Compile>
     <Page Include="Frontend\AlcatrazSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Frontend\ConsoleWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

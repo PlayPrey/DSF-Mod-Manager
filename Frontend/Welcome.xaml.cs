@@ -67,7 +67,7 @@ namespace DsfMm.Frontend
 
             File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "Settings.json", JsonConvert.SerializeObject(settings));
 
-            MessageBox.Show("It's set! Please close the program and relaunch it. This will be improved in the next update of course.");
+            this.Close();
         }
 
 

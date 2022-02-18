@@ -19,6 +19,7 @@ namespace DsfMm.Frontend
     /// </summary>
     public partial class Manager : Window
     {
+        public ConsoleWindow console;
         public Settings settings;
         public ModListPage page;
         public AlcatrazSettings alcatrazPage;
@@ -30,38 +31,23 @@ namespace DsfMm.Frontend
         public Manager()
         {
             InitializeComponent();
-            LoadSettings();
 
-            //MessageBox.Show(Directory.GetCurrentDirectory());
+            console = new ConsoleWindow();
 
-            if(Directory.GetDirectories(settings.ModFolder).Length > 0)
-            {
-                //int counter = 0;
-                foreach(string dir in Directory.GetDirectories(settings.ModFolder + "\\"))
-                {
-                    if (dir.EndsWith("_BackupFiles"))
-                        continue;
+            while(!LoadSettings())
 
 
-                    if(File.Exists(dir + "\\manifest.json"))
-                    {
-
-                    }
-                    else
-                    {
-                        //Mod mod = new Mod() { Priority = counter++, Dev = "Unknown", Name = dir.Split(Path.DirectorySeparatorChar).Last(), Version = "1.0", Enabled = true };
-
-
-
-                       ///smodListView.Items.Add(mod);
-                    }
-                }
-            }
+            console.AddLog("== Console Initialized ==");
+            
 
             page = new ModListPage(this);
             frame.Content = page;
 
             textDsfVer.Text = ConvertHashToVersion(DsfHash);
+            console.AddLog("== Game Version: "+ConvertHashToVersion(DsfHash)+" ==");
+
+
+            RefreshCheckboxStatus();
         }
 
         public string DsfHash
@@ -87,30 +73,16 @@ namespace DsfMm.Frontend
             }
         }
 
-        public void LoadMods()
-        {
-            if(settings != null)
-            {
-                if(settings.ModListing != null)
-                {
 
-                }
-                else
-                {
-                    MessageBox.Show("You can install mods by dragging the zip archive onto the install button.", "Hey!", MessageBoxButton.OK, MessageBoxImage.Hand);
-                }
-            }
-        }
-
-
-        public void LoadSettings()
+        public bool LoadSettings()
         {
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "Settings.json"))
             {
                 settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "Settings.json"));
+                console.AddLog("== Loading Settings File ==");
 
                 // Make sure that the modfolder value isn't zero, and if it is apply a default one. 
-                if(settings.ModFolder == null || settings.ModFolder == string.Empty)
+                if (settings.ModFolder == null || settings.ModFolder == string.Empty)
                 {
                     settings.ModFolder = AppDomain.CurrentDomain.BaseDirectory + "\\Mods";
 
@@ -122,10 +94,16 @@ namespace DsfMm.Frontend
 
                 if (settings.ModListing == null)
                     settings.ModListing = new List<Mod>();
+
+
+                console.AddLog("== Settings File Loaded ==");
+                return true;
             }
             else
             {
+                console.AddLog("Settings file missing, running setup!");
                 Setup();
+                return false;
             }
         }
         public void Setup()
@@ -158,6 +136,7 @@ namespace DsfMm.Frontend
                         continue;
 
                     modFolderToInstall.Add(dir);
+                    console.AddLog("Added Mod Folder to Install Check List: " + dir);
                 }
 
                 if (debug)
@@ -167,7 +146,10 @@ namespace DsfMm.Frontend
                 List<string> filesToBackup = new List<string>();
 
                 if (!Directory.Exists(settings.ModFolder + "\\_BackupFiles"))
+                {
                     Directory.CreateDirectory(settings.ModFolder + "\\_BackupFiles");
+                    console.AddLog("_BackupFiles folder was missing, but should be created now");
+                }
 
                 // Initial folder scan
                 for (int modFolder = 0; modFolder < modFolderToInstall.Count; modFolder++)
@@ -211,16 +193,33 @@ namespace DsfMm.Frontend
                 }
 
 
+                console.AddLog("Stage 1 complete, now injecting mods into the game");
+
                 // Now inject the mods into the game
                 for (int modFolder = 0; modFolder < modFolderToInstall.Count; modFolder++)
                 {
                     bool shouldInstall = true;
+                    bool shouldRemove = false;
                     // Check first real quick for install status
                     if (File.Exists(modFolderToInstall[modFolder] + @"\cache"))
                     {
                         InstallationStatus status = JsonConvert.DeserializeObject<InstallationStatus>(File.ReadAllText(modFolderToInstall[modFolder] + @"\cache"));
-                        if (status.isInstalled || !status.isEnabled)
+
+                        if (status.isInstalled && !status.isEnabled)
+                        {
                             shouldInstall = false;
+                            shouldRemove = true;
+                            console.AddLog(modFolderToInstall[modFolder] + " is flagged for removal");
+                        }
+                        else if (status.isInstalled || !status.isEnabled)
+                        {
+                            shouldInstall = false;
+                            console.AddLog(modFolderToInstall[modFolder] + " is flagged for skipping install (" + status.isInstalled + "|" + status.isEnabled + ")");
+                        }
+                        else
+                        {
+                            console.AddLog(modFolderToInstall[modFolder] + " is flagged for install-now");
+                        }
                     }
                     //else
                     //    MessageBox.Show(modFolderToInstall[modFolder] + @"\cache Don' exis!");
@@ -229,6 +228,9 @@ namespace DsfMm.Frontend
                     {
                         switch (InstallManager.Install(modFolderToInstall[modFolder]))
                         {
+                            case 0:
+                                console.AddLog("Successfully installed " + modFolder);
+                                break;
                             case 1:
                                 MessageBox.Show("Unknown error occured.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                                 break;
@@ -237,19 +239,21 @@ namespace DsfMm.Frontend
                                 break;
                         }
                     }
-                    else
+                    else if(shouldRemove)
                     {
                         InstallManager.UninstallDisabledMod(modFolderToInstall[modFolder]);
 
-
+                        console.AddLog("Successfully removed " + modFolder);
                     }
                 }
 
                 InstallManager.GenerateBootstrapper();
 
+                console.AddLog("Game is ready to launch!");
 
                 MessageBox.Show("Starting game...");
 
+                Directory.SetCurrentDirectory(settings.GameDirectory.Replace("Driver.exe", ""));
                 Process game = Process.Start(settings.GameDirectory);
 
                 game.EnableRaisingEvents = true;
@@ -290,11 +294,16 @@ namespace DsfMm.Frontend
                     if (debug)
                         MessageBox.Show("Found file\n\n" + fileToTest + "\n\nI want to copy this to:\n" + backupDir + fileId);
 
+                    console.AddLog("Backing up file: " + fileToTest);
+
                     if (!Directory.Exists(Path.GetDirectoryName(pasteLocation)))
                         Directory.CreateDirectory(Path.GetDirectoryName(pasteLocation));
 
                     if(!File.Exists(pasteLocation))
                         File.Copy(fileToTest, pasteLocation, true);
+
+
+                    console.AddLog("Success!");
                 }
 
 
@@ -302,7 +311,53 @@ namespace DsfMm.Frontend
 
             if(debug)
                 MessageBox.Show("DONE WITH BACKUP");
+            console.AddLog("Done with backup process!");
         }
+
+        public void RefreshCheckboxStatus()
+        {
+            string lastId = "";
+            try
+            {
+                foreach(string modFolder in Directory.GetDirectories(settings.ModFolder))
+                {
+                    if (modFolder.EndsWith("_BackupFiles"))
+                        continue;
+
+                    string id = "";
+
+                    if(File.Exists(modFolder + @"\manifest.json"))
+                    {
+                        ModManifest manifest = JsonConvert.DeserializeObject<ModManifest>(File.ReadAllText(modFolder + @"\manifest.json"));
+                        id = manifest.Identifier.ToUpper();
+                        lastId = id;
+                    }
+                    else
+                    {
+                        id = new DirectoryInfo(modFolder).Name.Replace(" ", "").ToUpper();
+                        lastId = id;
+                    }
+
+                    InstallationStatus status = JsonConvert.DeserializeObject<InstallationStatus>(File.ReadAllText(modFolder + @"\cache"));
+
+                    if (status.isEnabled)
+                    {
+                        page.listCheckboxes[id].IsChecked = true;
+                        console.AddLog("Should check the box for id: " + id);
+                    }
+                    else
+                    {
+                        page.listCheckboxes[id].IsChecked = false;
+                        console.AddLog("Should uncheck the box for id: " + id);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                console.AddLog(ex.Message);
+            }
+        }
+
 
         //private void InstallModsIntoGame(string mod, string game)
         //{
@@ -363,38 +418,6 @@ namespace DsfMm.Frontend
         //    File.WriteAllText(mod + @"\cache" ,JsonConvert.SerializeObject(status, Formatting.Indented));
         //}
 
-        private void ScanDroppedFiles(string[] files)
-        {
-            foreach (string file in files)
-            {
-                if (file.ToLower().EndsWith(".zip"))
-                {
-                    ZipArchive archive = ZipFile.Open(file, ZipArchiveMode.Read);
-
-                    if (!Directory.Exists(settings.ModFolder + "\\" + Path.GetFileNameWithoutExtension(file)))
-                        archive.ExtractToDirectory(settings.ModFolder + "\\" + Path.GetFileNameWithoutExtension(file));
-                    else
-                    {
-                        MessageBox.Show("Folder required for extraction already exsists, skipping.");
-                        continue;
-                    }
-
-                    if (VerifyArchive(settings.ModFolder + "\\" + Path.GetFileNameWithoutExtension(file)).hasManifest)
-                    {
-                        // Work with a manifested mod
-
-                    }
-                    else if (VerifyArchive(settings.ModFolder + "\\" + Path.GetFileNameWithoutExtension(file)).hasFamiliarStructure)
-                    {
-
-                        Mod mod = new Mod() { Dev = "Unknown", Name = (settings.ModFolder + "\\" + Path.GetFileNameWithoutExtension(file)).Split(Path.DirectorySeparatorChar).Last(), Version = "1.0" };
-
-                        ///modListView.Items.Add(mod);
-                    }
-                }
-                else continue;
-            }
-        }
 
         // Dedicated to make sure the files within seems relevant, and check if there is a manifest file to make the experience A LOT BETTER. (not really)
         // Is being moved to ModListPage who is now responsable of all of this.
@@ -569,7 +592,8 @@ namespace DsfMm.Frontend
 
         private void Game_Exited(object sender, EventArgs e)
         {
-            MessageBox.Show("Hope you had fun... " + Environment.UserName);
+            if(debug)
+                MessageBox.Show("Hope you had fun... " + Environment.UserName);
         }
 
         private void statusBarVersion_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -596,7 +620,7 @@ namespace DsfMm.Frontend
             {
                 string[] droppedFiles = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-                ScanDroppedFiles(droppedFiles);
+                page.ScanDroppedFiles(droppedFiles);
             }
 
             bInstallModLabel.Content = "Install new Mod";
@@ -635,8 +659,13 @@ namespace DsfMm.Frontend
 
             if(open.ShowDialog() == true)
             {
-                ScanDroppedFiles(open.FileNames);
+                page.ScanDroppedFiles(open.FileNames);
             }
+        }
+
+        private void bDebug_Click(object sender, RoutedEventArgs e)
+        {
+            console.Show();
         }
     }
     public class Settings

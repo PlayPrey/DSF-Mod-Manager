@@ -89,6 +89,7 @@ namespace DsfMm.Frontend
         private void bBack_Click(object sender, RoutedEventArgs e)
         {
             manager.frame.Content = manager.page;
+            manager.RefreshCheckboxStatus();
         }
 
         private void bToggle_Click(object sender, RoutedEventArgs e)

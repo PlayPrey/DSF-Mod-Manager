@@ -137,7 +137,7 @@ namespace DsfMm.Frontend
                         listCheckboxes[manifest.Identifier.ToUpper()].IsChecked = true;
                 }
                 else
-                    AddListing(new DirectoryInfo(cache.folder).Name.ToLower().Replace(" ", ""), new DirectoryInfo(cache.folder).Name);
+                    AddListing(new DirectoryInfo(cache.folder).Name.ToUpper().Replace(" ", ""), new DirectoryInfo(cache.folder).Name);
             }
         }
         public void ScanModFolder(string folder, bool assumeNew)
@@ -282,6 +282,8 @@ namespace DsfMm.Frontend
                 else
                     primaryScrollview.Children.Add(newButton);
 
+                manager.console.AddLog("Added Mod List ID: " + modId);
+
                 Console.WriteLine("Succesfully added listing with Mod ID: " + modId + " and DisplayName " + displayName);
             }
             else
@@ -411,7 +413,7 @@ namespace DsfMm.Frontend
             return false;
         }
 
-        private void ScanDroppedFiles(string[] files)
+        public void ScanDroppedFiles(string[] files)
         {
             foreach (string file in files)
             {
@@ -422,6 +424,7 @@ namespace DsfMm.Frontend
                     string ExtractionPath = manager.settings.ModFolder + "\\" + Path.GetFileNameWithoutExtension(file);
 
                     Console.WriteLine("Scanning folder: " + ExtractionPath);
+                    manager.console.AddLog("Scanning folder: " + ExtractionPath);
 
                     if (!Directory.Exists(ExtractionPath))
                         archive.ExtractToDirectory(ExtractionPath);
@@ -436,7 +439,12 @@ namespace DsfMm.Frontend
                     if (VerifyArchive(ExtractionPath).hasManifest)
                     {
                         // Work with a manifested mod
+                        ModManifest manifest = JsonConvert.DeserializeObject<ModManifest>(ExtractionPath + @"\manifest.json");
 
+                        AddListing(manifest.Identifier.ToUpper(), manifest.DisplayName);
+
+                        listModFolders.Add(manifest.Identifier.ToUpper(), ExtractionPath);
+                        listCheckboxes[manifest.Identifier.ToUpper()].IsChecked = true;
                     }
                     else if (VerifyArchive(ExtractionPath).hasFamiliarStructure)
                     {
@@ -447,6 +455,7 @@ namespace DsfMm.Frontend
                         AddListing(modID, Path.GetFileNameWithoutExtension(file));
 
                         listModFolders.Add(modID, ExtractionPath);
+                        listCheckboxes[modID].IsChecked = true;
 
                         //MessageBox.Show(modID);
                     }

@@ -244,6 +244,8 @@ namespace DsfMm.Scripts
                 foreach (string line in Launch)
                     result.Add(line);
 
+            // Freedom is on its way
+
             result.Add("end");
             result.Add("");
             result.Add(BOOTSTRAPPER_SHUTDOWN);
@@ -258,6 +260,9 @@ namespace DsfMm.Scripts
             result.Add("return UserBootstrapper");
             result.Add("");
             result.Add("-- Have a nice day, from Prey. Remember, no touchie!");
+
+            if (!Directory.Exists(GameDir + @"\Common\\UserLuaScripts"))
+                Directory.CreateDirectory(GameDir + @"\Common\\UserLuaScripts");
 
             File.WriteAllLines(GameDir + @"\Common\\UserLuaScripts\\bootstrap.lua", result.ToArray());
 
